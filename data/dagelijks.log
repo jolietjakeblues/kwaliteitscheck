@@ -1,0 +1,29 @@
+==== wo 14-10-2026 12:09:24,70 
+Run 2026-10-14T10:09:24Z: 21 checks tegen https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/cho/sparql
+  01_rm_zonder_geometrie                         15 /    63,098  (0.024%)  0.2s
+  02_rm_zonder_rijksmonumentnummer                0 /    63,098  (0.0%)  0.1s
+  03_rijksmonumentnummer_dubbel                   0 /    67,496  (0.0%)  0.1s
+  04_rm_choi_niet_precies_een                     0 /    63,098  (0.0%)  0.1s
+  05_rm_zonder_oorspronkelijke_functie            0 /    63,098  (0.0%)  0.1s
+  06_rm_zonder_monumentaard                       0 /    63,098  (0.0%)  0.1s
+  07_rm_zonder_inschrijvingsdatum                 0 /    63,098  (0.0%)  0.1s
+  08_rm_zonder_gemeente                           2 /    63,098  (0.003%)  0.1s
+  09_rm_in_opgeheven_gemeente                   448 /    63,096  (0.71%)  0.7s
+  10_gemeente_onbekend_in_tooi                    0 /       402  (0.0%)  0.1s
+  11_wkt_onbekend_type                            0 /    63,083  (0.0%)  0.1s
+  12_wkt_buiten_nederland                         0 /    63,083  (0.0%)  0.1s
+  13_concept_meerdere_preflabels              1,039 /     4,697  (22.121%)  0.1s
+  14_concept_zonder_preflabel                     0 /     4,697  (0.0%)  0.1s
+  15_datering_zonder_begin_of_eind                0 /   917,926  (0.0%)  0.1s
+  15b_dateringsgrens_zonder_periode          42,584 / 1,835,852  (2.32%)  0.1s
+  16_bag_postcode_ongeldig                        0 /   122,268  (0.0%)  0.1s
+  17_bag_huisnummer_zonder_postcode             305 /   122,573  (0.249%)  0.1s
+  18_bag_vbo_id_ongeldig                          0 /   116,517  (0.0%)  0.1s
+  19_rm_datum_in_toekomst                         0 /    63,098  (0.0%)  0.1s
+  20_rm_wees_in_bijgraph                          2 /    63,352  (0.003%)  0.1s
+[NbConvertApp] Converting notebook dashboard.ipynb to html
+C:\Python314\Lib\site-packages\zmq\_future.py:718: RuntimeWarning: Proactor event loop does not implement add_reader family of methods required for zmq. Registering an additional selector thread for add_reader support via tornado. Use `asyncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())` to avoid this warning.
+  self._get_loop()
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[NbConvertApp] WARNING | Alternative text is missing on 1 image(s).
+[NbConvertApp] Writing 404957 bytes to dashboard.html

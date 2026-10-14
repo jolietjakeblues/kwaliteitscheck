@@ -12,6 +12,14 @@ jupyter lab dashboard.ipynb         # dashboard bekijken
 jupyter nbconvert --to html --execute --no-input dashboard.ipynb   # statische HTML om te delen
 ```
 
+## Dagelijkse run
+
+De Windows-taak **CHO-KENNIS kwaliteitscheck** start elke dag om 07:30 `dagelijks.cmd`. Dat is na de verversing van de dataset, rond 06:45. Staat de pc op dat moment uit, dan loopt de run zodra hij weer aan is. Het script draait de checks, rendert `dashboard.html` opnieuw en schrijft alle uitvoer naar `data/dagelijks.log`.
+
+- Handmatig starten: `Start-ScheduledTask -TaskName 'CHO-KENNIS kwaliteitscheck'` of dubbelklik op `dagelijks.cmd`.
+- Uitzetten: `Disable-ScheduledTask -TaskName 'CHO-KENNIS kwaliteitscheck'`.
+- Verwijderen: `Unregister-ScheduledTask -TaskName 'CHO-KENNIS kwaliteitscheck'`.
+
 ## Afbakening
 
 - **Endpoint:** `https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/cho/sparql` (TriplyDB, niet de Virtuoso-service).
