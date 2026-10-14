@@ -1,0 +1,7 @@
+# titel: Inschrijvings- of registratiedatum in de toekomst
+# dimensie: geldigheid
+# populatie: actieve rijksmonumenten
+SELECT (SUM(?f) AS ?fout) (COUNT(?m) AS ?totaal) WHERE {
+  GRAPH {G_INSTANTIES} { ?m ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} }
+  BIND(IF(EXISTS { GRAPH {G_INSTANTIES} { ?m ceo:datumInschrijvingInMonumentenregister|ceo:registratiedatum ?d } FILTER(STR(?d) > SUBSTR(STR(NOW()), 1, 10)) }, 1, 0) AS ?f)
+}

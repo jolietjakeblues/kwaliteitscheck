@@ -1,0 +1,9 @@
+# titel: Geometrie met onverwacht WKT-type
+# dimensie: geldigheid
+# populatie: geometrieën van actieve rijksmonumenten
+# toelichting: Verwacht: Point, Polygon of MultiPolygon (wisselende hoofdletters zijn geen fout).
+SELECT (SUM(?f) AS ?fout) (COUNT(?w) AS ?totaal) WHERE {
+  GRAPH {G_INSTANTIES} { ?m ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} ; ceo:heeftGeometrie ?g . ?g geo:asWKT ?w }
+  BIND(LCASE(REPLACE(STRBEFORE(STR(?w), "("), " ", "")) AS ?t)
+  BIND(IF(?t IN ("point", "polygon", "multipolygon"), 0, 1) AS ?f)
+}

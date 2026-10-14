@@ -1,0 +1,7 @@
+# titel: Rijksmonument zonder datum inschrijving monumentenregister
+# dimensie: volledigheid
+# populatie: actieve rijksmonumenten
+SELECT (SUM(?f) AS ?fout) (COUNT(?m) AS ?totaal) WHERE {
+  GRAPH {G_INSTANTIES} { ?m ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} }
+  BIND(IF(EXISTS { GRAPH {G_INSTANTIES} { ?m ceo:datumInschrijvingInMonumentenregister ?d } }, 0, 1) AS ?f)
+}

@@ -1,0 +1,8 @@
+# titel: Datering zonder begin- of einddatering
+# dimensie: volledigheid
+# populatie: alle ceo:Datering-nodes
+# toelichting: Geteld als verschil van twee aantallen; EXISTS per node is te zwaar voor ~918.000 dateringen.
+SELECT ((?tot - ?ok) AS ?fout) (?tot AS ?totaal) WHERE {
+  { SELECT (COUNT(?d) AS ?tot) WHERE { GRAPH {G_INSTANTIES} { ?d a ceo:Datering } } }
+  { SELECT (COUNT(DISTINCT ?d) AS ?ok) WHERE { GRAPH {G_INSTANTIES} { ?d a ceo:Datering ; ceo:heeftBeginDatering ?b ; ceo:heeftEindDatering ?e } } }
+}

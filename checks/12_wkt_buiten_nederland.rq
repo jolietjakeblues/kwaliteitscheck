@@ -1,0 +1,11 @@
+# titel: Geometrie buiten Nederland
+# dimensie: geldigheid
+# populatie: geometrieën van actieve rijksmonumenten
+# toelichting: Eerste coördinaat buiten lon 3,0-7,3 / lat 50,7-53,7 (WGS84). Vangt ook verwisselde x/y en RD-coördinaten.
+SELECT (SUM(?f) AS ?fout) (COUNT(?w) AS ?totaal) WHERE {
+  GRAPH {G_INSTANTIES} { ?m ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} ; ceo:heeftGeometrie ?g . ?g geo:asWKT ?w }
+  BIND(REPLACE(STRAFTER(STR(?w), "("), "^[(\\s]+", "") AS ?rest)
+  BIND(xsd:decimal(STRBEFORE(?rest, " ")) AS ?x)
+  BIND(xsd:decimal(REPLACE(STRAFTER(?rest, " "), "^\\s*([-0-9.]+).*$", "$1", "s")) AS ?y)
+  BIND(IF(BOUND(?x) && BOUND(?y) && ?x >= 3.0 && ?x <= 7.3 && ?y >= 50.7 && ?y <= 53.7, 0, 1) AS ?f)
+}

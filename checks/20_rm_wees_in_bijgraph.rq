@@ -1,0 +1,8 @@
+# titel: Rijksmonument alleen in bijgraph, niet in instanties-rce
+# dimensie: samenhang
+# populatie: objecten met type ceo:Rijksmonument in andere graphs
+# toelichting: Graphoverstijgende check: wezen in punten, image, groenaanleg enz.
+SELECT (SUM(?f) AS ?fout) (COUNT(?m) AS ?totaal) WHERE {
+  { SELECT DISTINCT ?m WHERE { GRAPH ?g { ?m a ceo:Rijksmonument } FILTER(?g != {G_INSTANTIES}) } }
+  BIND(IF(EXISTS { GRAPH {G_INSTANTIES} { ?m a ceo:Rijksmonument } }, 0, 1) AS ?f)
+}

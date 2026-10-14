@@ -1,0 +1,7 @@
+# titel: BAG-relatie met huisnummer maar zonder postcode
+# dimensie: volledigheid
+# populatie: BAG-relaties met huisnummer
+SELECT (SUM(?f) AS ?fout) (COUNT(?b) AS ?totaal) WHERE {
+  { SELECT DISTINCT ?b WHERE { GRAPH {G_INSTANTIES} { ?b a ceo:BAGRelatie ; ceo:huisnummer ?h } } }
+  BIND(IF(EXISTS { GRAPH {G_INSTANTIES} { ?b ceo:postcode ?p } }, 0, 1) AS ?f)
+}

@@ -1,0 +1,8 @@
+# titel: BAG-relatie met ongeldige postcode
+# dimensie: geldigheid
+# populatie: BAG-relaties met postcode
+# toelichting: Verwacht formaat 1234AB, zonder spatie.
+SELECT (SUM(?f) AS ?fout) (COUNT(?b) AS ?totaal) WHERE {
+  GRAPH {G_INSTANTIES} { ?b a ceo:BAGRelatie ; ceo:postcode ?p }
+  BIND(IF(REGEX(STR(?p), "^[1-9][0-9]{3}[A-Z]{2}$"), 0, 1) AS ?f)
+}

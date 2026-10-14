@@ -1,0 +1,10 @@
+# titel: Begin- of einddatering zonder periode
+# dimensie: volledigheid
+# populatie: alle ceo:BeginDatering- en ceo:EindDatering-nodes
+# toelichting: Geteld als verschil van aantallen per klasse (zonder DISTINCT/UNION, anders timeout). Gaat ervan uit dat een node hooguit één periode heeft.
+SELECT ((?totB + ?totE - ?okB - ?okE) AS ?fout) ((?totB + ?totE) AS ?totaal) WHERE {
+  { SELECT (COUNT(?d) AS ?totB) WHERE { GRAPH {G_INSTANTIES} { ?d a ceo:BeginDatering } } }
+  { SELECT (COUNT(?d) AS ?totE) WHERE { GRAPH {G_INSTANTIES} { ?d a ceo:EindDatering } } }
+  { SELECT (COUNT(?d) AS ?okB) WHERE { GRAPH {G_INSTANTIES} { ?d a ceo:BeginDatering ; ceo:heeftPeriode ?p } } }
+  { SELECT (COUNT(?d) AS ?okE) WHERE { GRAPH {G_INSTANTIES} { ?d a ceo:EindDatering ; ceo:heeftPeriode ?p } } }
+}

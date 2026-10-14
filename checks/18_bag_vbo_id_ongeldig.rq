@@ -1,0 +1,8 @@
+# titel: BAG-verblijfsobject-ID met ongeldig formaat
+# dimensie: geldigheid
+# populatie: BAG-relaties met verblijfsobjectIdentificatie
+# toelichting: Een BAG-ID bestaat uit 16 cijfers.
+SELECT (SUM(?f) AS ?fout) (COUNT(?b) AS ?totaal) WHERE {
+  GRAPH {G_INSTANTIES} { ?b ceo:verblijfsobjectIdentificatie ?id }
+  BIND(IF(REGEX(STR(?id), "^[0-9]{16}$"), 0, 1) AS ?f)
+}

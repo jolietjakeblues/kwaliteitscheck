@@ -1,0 +1,8 @@
+# titel: Concept zonder prefLabel
+# dimensie: verwijzing
+# populatie: unieke concepten gebruikt als functie-, type-, materiaal-, stijl- of periodenaam
+SELECT (SUM(?f) AS ?fout) (COUNT(?c) AS ?totaal) WHERE {
+  { SELECT DISTINCT ?c WHERE { GRAPH {G_INSTANTIES} {
+      ?x ceo:heeftFunctieNaam|ceo:heeftTypeNaam|ceo:heeftMateriaalNaam|ceo:heeftStijlEnCultuurNaam|ceo:heeftPeriode ?c } } }
+  BIND(IF(EXISTS { GRAPH {G_INSTANTIES} { ?c skos:prefLabel ?l } }, 0, 1) AS ?f)
+}

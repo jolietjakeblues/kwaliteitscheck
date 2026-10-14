@@ -1,0 +1,12 @@
+# titel: Rijksmonument zonder of met meerdere CHOI-nummers
+# dimensie: uniciteit
+# populatie: actieve rijksmonumenten
+# toelichting: Elk CHO hoort precies één ceo:cultuurhistorischObjectnummer te hebben.
+SELECT (SUM(IF(?k = 1, 0, 1)) AS ?fout) (COUNT(?m) AS ?totaal) WHERE {
+  SELECT ?m (COUNT(DISTINCT ?c) AS ?k) WHERE {
+    GRAPH {G_INSTANTIES} {
+      ?m ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} .
+      OPTIONAL { ?m ceo:cultuurhistorischObjectnummer ?c }
+    }
+  } GROUP BY ?m
+}

@@ -1,0 +1,11 @@
+# titel: Concept met meerdere prefLabels
+# dimensie: samenhang
+# populatie: unieke concepten gebruikt als functie-, type-, materiaal-, stijl- of periodenaam
+# toelichting: SKOS staat maximaal één prefLabel per taal toe.
+SELECT (SUM(IF(?k > 1, 1, 0)) AS ?fout) (COUNT(?c) AS ?totaal) WHERE {
+  SELECT ?c (COUNT(DISTINCT ?l) AS ?k) WHERE {
+    { SELECT DISTINCT ?c WHERE { GRAPH {G_INSTANTIES} {
+        ?x ceo:heeftFunctieNaam|ceo:heeftTypeNaam|ceo:heeftMateriaalNaam|ceo:heeftStijlEnCultuurNaam|ceo:heeftPeriode ?c } } }
+    OPTIONAL { GRAPH {G_INSTANTIES} { ?c skos:prefLabel ?l } }
+  } GROUP BY ?c
+}

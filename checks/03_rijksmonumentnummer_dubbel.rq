@@ -1,0 +1,8 @@
+# titel: Rijksmonumentnummer bij meer dan één object
+# dimensie: uniciteit
+# populatie: unieke rijksmonumentnummers (alle juridische statussen)
+SELECT (SUM(IF(?k > 1, 1, 0)) AS ?fout) (COUNT(?nr) AS ?totaal) WHERE {
+  SELECT ?nr (COUNT(DISTINCT ?m) AS ?k) WHERE {
+    GRAPH {G_INSTANTIES} { ?m a ceo:Rijksmonument ; ceo:rijksmonumentnummer ?nr }
+  } GROUP BY ?nr
+}

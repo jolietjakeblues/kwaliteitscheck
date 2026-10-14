@@ -1,0 +1,8 @@
+# titel: Rijksmonument zonder geometrie
+# dimensie: volledigheid
+# populatie: actieve rijksmonumenten
+# toelichting: Geen ceo:heeftGeometrie in instanties-rce. De graph 'punten' telt niet mee.
+SELECT (SUM(?f) AS ?fout) (COUNT(?m) AS ?totaal) WHERE {
+  GRAPH {G_INSTANTIES} { ?m ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} }
+  BIND(IF(EXISTS { GRAPH {G_INSTANTIES} { ?m ceo:heeftGeometrie ?g } }, 0, 1) AS ?f)
+}
