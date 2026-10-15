@@ -12,7 +12,17 @@ jupyter lab dashboard.ipynb         # dashboard bekijken
 jupyter nbconvert --to html --execute --no-input dashboard.ipynb   # statische HTML om te delen
 ```
 
-## Dagelijkse run
+## Dagelijkse run (GitHub Actions)
+
+Het dashboard staat op **https://jolietjakeblues.github.io/kwaliteitscheck/**. De workflow `.github/workflows/dagelijks.yml` draait elke dag om 05:30 UTC (07:30 zomertijd, 06:30 wintertijd): checks draaien, dashboard renderen, publiceren op GitHub Pages. Handmatig starten kan via *Actions → Dagelijkse kwaliteitscheck → Run workflow*.
+
+De workflow commit niets. De historie staat in de gepubliceerde site (`/data/historie.csv` en `/data/graphs_historie.csv`). Elke run haalt die op, voegt een run toe en publiceert opnieuw. De CSV's in `data/` in de repo zijn alleen het startpunt voor de allereerste run.
+
+Eenmalig instellen: *Settings → Pages → Build and deployment → Source: GitHub Actions*.
+
+Let op: GitHub zet geplande workflows uit in een openbare repo zonder activiteit gedurende 60 dagen. Je krijgt daar vooraf een mail over, en één klik op *Enable workflow* zet hem weer aan.
+
+## Lokale run (Windows-taak)
 
 De Windows-taak **CHO-KENNIS kwaliteitscheck** start elke dag om 07:30 `dagelijks.cmd`. Dat is na de verversing van de dataset, rond 06:45. Staat de pc op dat moment uit, dan loopt de run zodra hij weer aan is. Het script draait de checks, rendert `dashboard.html` opnieuw en schrijft alle uitvoer naar `data/dagelijks.log`.
 
