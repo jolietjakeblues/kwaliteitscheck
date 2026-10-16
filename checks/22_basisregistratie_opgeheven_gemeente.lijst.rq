@@ -1,0 +1,11 @@
+# Lijst bij check 22: objecten waarvan een basisregistratierelatie naar een opgeheven gemeente verwijst
+SELECT ?object (SAMPLE(?t) AS ?objecttype) (SAMPLE(?choi) AS ?objectnummer) (SAMPLE(?nr) AS ?rijksmonumentnummer) ?gemeente ?opgeheven_per WHERE {
+  { SELECT DISTINCT ?gm ?opgeheven_per ?gemeente WHERE { GRAPH {G_OWMS} {
+      ?gm a owms:Gemeente ; owms:endDate ?opgeheven_per . OPTIONAL { ?gm skos:prefLabel ?gemeente } } } }
+  GRAPH {G_INSTANTIES} {
+    ?br ceo:heeftGemeente ?gm .
+    ?object ceo:heeftBasisregistratieRelatie ?br ; a ?t .
+    OPTIONAL { ?object ceo:cultuurhistorischObjectnummer ?choi }
+    OPTIONAL { ?object ceo:rijksmonumentnummer ?nr }
+  }
+} GROUP BY ?object ?gemeente ?opgeheven_per ORDER BY ?gemeente ?object

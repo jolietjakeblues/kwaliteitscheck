@@ -1,0 +1,9 @@
+# Lijst bij check 01: actieve rijksmonumenten zonder geometrie
+SELECT ?object ?rijksmonumentnummer (SAMPLE(?n) AS ?naam) (SAMPLE(?w) AS ?woonplaats) WHERE {
+  GRAPH {G_INSTANTIES} {
+    ?object ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} ; ceo:rijksmonumentnummer ?rijksmonumentnummer .
+    FILTER NOT EXISTS { ?object ceo:heeftGeometrie ?g }
+    OPTIONAL { ?object ceo:heeftNaam/ceo:naam ?n }
+    OPTIONAL { ?object ceo:heeftBasisregistratieRelatie/ceo:heeftBAGRelatie/ceo:woonplaatsnaam ?w }
+  }
+} GROUP BY ?object ?rijksmonumentnummer ORDER BY ?rijksmonumentnummer

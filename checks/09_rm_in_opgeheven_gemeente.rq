@@ -1,0 +1,11 @@
+# titel: Rijksmonument gekoppeld aan opgeheven gemeente
+# dimensie: actualiteit
+# populatie: actieve rijksmonumenten met gemeente
+# toelichting: De gekoppelde OWMS-gemeente heeft een owms:endDate (herindeling niet doorgevoerd). Eerst de kleine set opgeheven gemeenten, dan koppelen; andersom loopt het op een timeout.
+SELECT ?fout ?totaal WHERE {
+  { SELECT (COUNT(DISTINCT ?m) AS ?fout) WHERE {
+      { SELECT DISTINCT ?gm WHERE { GRAPH {G_OWMS} { ?gm a owms:Gemeente ; owms:endDate ?e } } }
+      GRAPH {G_INSTANTIES} { ?m ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} ; ceo:heeftBasisregistratieRelatie/ceo:heeftGemeente ?gm } } }
+  { SELECT (COUNT(DISTINCT ?m) AS ?totaal) WHERE {
+      GRAPH {G_INSTANTIES} { ?m ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} ; ceo:heeftBasisregistratieRelatie/ceo:heeftGemeente ?gm } } }
+}

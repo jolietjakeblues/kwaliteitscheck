@@ -31,6 +31,9 @@ CHECKS_DIR = ROOT / "checks"
 DATA_DIR = ROOT / "data"
 HISTORIE = DATA_DIR / "historie.csv"
 GRAPHS_HISTORIE = DATA_DIR / "graphs_historie.csv"
+LIJSTEN_DIR = DATA_DIR / "lijsten"
+LIJST_PAGINA = 10000
+REGISTER_URL = "https://monumentenregister.cultureelerfgoed.nl/monumenten/"
 
 # Prefixes en vaste URI's die in elke check beschikbaar zijn. In de .rq-bestanden
 # staan placeholders als {G_INSTANTIES} zodat graph-URI's op één plek staan.
@@ -40,15 +43,17 @@ PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX tooi: <https://identifier.overheid.nl/tooi/def/ont/>
+PREFIX owms: <http://standaarden.overheid.nl/owms/terms/>
 """
 
 PLACEHOLDERS = {
     # Hoofdgraph: actuele, levende instantiedata (~92% van alle triples)
     "G_INSTANTIES": "<https://linkeddata.cultureelerfgoed.nl/graph/instanties-rce>",
-    # Naslaggraph: wordt niet zelf gecontroleerd, alleen gebruikt om gemeenteverwijzingen
-    # te toetsen (TOOI kent owmsId + einddatum, dus ook opgeheven gemeenten)
-    "G_TOOI": "<https://linkeddata.cultureelerfgoed.nl/rce/tooi/graph/gemeenten>",
+    # Naslag: OWMS is de waardelijst achter ceo:heeftGemeente/ceo:heeftProvincie.
+    # De dataset bevat twee kopieën (KOOP-origineel en RCE's graph/owms); check 23
+    # bewaakt dat ze gelijk blijven, de overige checks toetsen tegen het KOOP-origineel.
+    "G_OWMS": "<https://triplydb.com/koop/owms/graphs/default>",
+    "G_OWMS_RCE": "<https://linkeddata.cultureelerfgoed.nl/graph/owms>",
     # Juridische status (geverifieerde concept-URI's, zie MCP topic legal_status)
     "JS_RIJKSMONUMENT": "<https://data.cultureelerfgoed.nl/term/id/rn/2/b2d9a59a-fe1e-4552-9a05-3c2acddff864>",
     "JS_VOORBESCHERMD": "<https://data.cultureelerfgoed.nl/term/id/rn/2/2e93edd1-098f-4f31-ae7e-72cb77f4d2ca>",
@@ -95,7 +100,8 @@ def lees_check(pad: Path) -> dict:
 
 
 def alle_checks(filters: list[str] | None = None) -> list[dict]:
-    paden = sorted(list(CHECKS_DIR.glob("*.rq")) + list(CHECKS_DIR.glob("*.py")))
+    rq = [p for p in CHECKS_DIR.glob("*.rq") if not p.name.endswith(".lijst.rq")]
+    paden = sorted(rq + list(CHECKS_DIR.glob("*.py")))
     checks = [lees_check(p) for p in paden]
     if filters:
         checks = [c for c in checks if any(c["id"].startswith(f) for f in filters)]
@@ -147,6 +153,38 @@ def draai_check(check: dict) -> dict:
     return uitkomst
 
 
+def schrijf_lijst(check_id: str) -> int | None:
+    """Draai checks/<id>.lijst.rq (indien aanwezig) en schrijf data/lijsten/<id>.csv.
+
+    De lijst toont de objecten achter de bevindingen van een check, zodat een
+    beheerder ze kan opzoeken. Gepagineerd, omdat het endpoint per antwoord
+    een maximum aantal rijen teruggeeft. Geeft het aantal rijen terug.
+    """
+    pad = CHECKS_DIR / f"{check_id}.lijst.rq"
+    if not pad.exists():
+        return None
+    query = vul_in(pad.read_text(encoding="utf-8"))
+    rijen, offset = [], 0
+    while True:
+        pagina = sparql(f"{query}\nLIMIT {LIJST_PAGINA} OFFSET {offset}")
+        rijen += pagina
+        if len(pagina) < LIJST_PAGINA:
+            break
+        offset += LIJST_PAGINA
+    velden = list(dict.fromkeys(k for r in rijen for k in r))
+    if "rijksmonumentnummer" in velden:
+        velden.append("monumentenregister")
+        for r in rijen:
+            if r.get("rijksmonumentnummer"):
+                r["monumentenregister"] = REGISTER_URL + r["rijksmonumentnummer"]
+    LIJSTEN_DIR.mkdir(parents=True, exist_ok=True)
+    with (LIJSTEN_DIR / f"{check_id}.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=velden or ["object"])
+        w.writeheader()
+        w.writerows(rijen)
+    return len(rijen)
+
+
 def leg_graphs_vast(run: str) -> None:
     graphs = requests.get(GRAPHS_API, timeout=60).json()
     nieuw = not GRAPHS_HISTORIE.exists()
@@ -162,25 +200,46 @@ def main(filters: list[str]) -> None:
     DATA_DIR.mkdir(exist_ok=True)
     run = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     checks = alle_checks(filters)
-    print(f"Run {run}: {len(checks)} checks tegen {ENDPOINT}")
+    # Alleen volledige runs gaan de historie in; een selectie is om te testen
+    # en zou in het dashboard anders als "laatste run" met ontbrekende checks verschijnen.
+    print(f"Run {run}: {len(checks)} checks tegen {ENDPOINT}"
+          + ("  (selectie: niet opgeslagen)" if filters else ""))
 
+    uitkomsten = []
+    for check in checks:
+        u = draai_check(check)
+        u["run"] = run
+        uitkomsten.append(u)
+        if u["status"] == "ok":
+            print(f"  {u['id']:<40} {u['fout']:>8,} / {u['totaal']:>9,}  ({u['pct_fout']}%)  {u['duur_s']}s")
+        else:
+            print(f"  {u['id']:<40} FOUT: {u['melding'][:80]}")
+
+    if filters:
+        return
     nieuw = not HISTORIE.exists()
     with HISTORIE.open("a", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=HISTORIE_VELDEN)
         if nieuw:
             w.writeheader()
-        for check in checks:
-            u = draai_check(check)
-            u["run"] = run
-            w.writerow(u)
-            f.flush()
-            if u["status"] == "ok":
-                print(f"  {u['id']:<40} {u['fout']:>8,} / {u['totaal']:>9,}  ({u['pct_fout']}%)  {u['duur_s']}s")
-            else:
-                print(f"  {u['id']:<40} FOUT: {u['melding'][:80]}")
+        w.writerows(uitkomsten)
+    leg_graphs_vast(run)
 
-    if not filters:
-        leg_graphs_vast(run)
+    # Lijsten geven de stand van de laatste run: oude lijsten van checks zonder
+    # bevindingen worden verwijderd, zodat er geen verouderde lijst blijft staan.
+    print("Lijsten:")
+    for u in uitkomsten:
+        oud = LIJSTEN_DIR / f"{u['id']}.csv"
+        if u["status"] != "ok" or not u["fout"]:
+            oud.unlink(missing_ok=True)
+            continue
+        try:
+            n = schrijf_lijst(u["id"])
+            if n is not None:
+                print(f"  {u['id']:<40} {n:>8,} rijen")
+        except Exception as e:  # noqa: BLE001 - een falende lijst mag de run niet stoppen
+            oud.unlink(missing_ok=True)
+            print(f"  {u['id']:<40} FOUT: {str(e)[:80]}")
 
 
 if __name__ == "__main__":

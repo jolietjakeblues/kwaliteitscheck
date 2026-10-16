@@ -1,0 +1,9 @@
+# titel: Gemeente- of provincie-URI niet als zodanig in OWMS
+# dimensie: verwijzing
+# populatie: unieke URI's achter ceo:heeftGemeente en ceo:heeftProvincie
+# toelichting: De URI moet in OWMS voorkomen met type owms:Gemeente respectievelijk owms:Provincie.
+SELECT (SUM(?f) AS ?fout) (COUNT(?u) AS ?totaal) WHERE {
+  { SELECT DISTINCT ?p ?u WHERE { GRAPH {G_INSTANTIES} { VALUES ?p { ceo:heeftGemeente ceo:heeftProvincie } ?x ?p ?u } } }
+  BIND(IF(?p = ceo:heeftGemeente, owms:Gemeente, owms:Provincie) AS ?type)
+  BIND(IF(EXISTS { GRAPH {G_OWMS} { ?u a ?type } }, 0, 1) AS ?f)
+}

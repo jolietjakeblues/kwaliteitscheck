@@ -1,0 +1,6 @@
+# Lijst bij check 20: rijksmonumenten die alleen in een bijgraph voorkomen
+SELECT ?object (GROUP_CONCAT(DISTINCT STR(?g); separator=" | ") AS ?graphs) (SAMPLE(?nr) AS ?rijksmonumentnummer) WHERE {
+  GRAPH ?g { ?object a ceo:Rijksmonument OPTIONAL { ?object ceo:rijksmonumentnummer ?nr } }
+  FILTER(?g != {G_INSTANTIES})
+  FILTER NOT EXISTS { GRAPH {G_INSTANTIES} { ?object a ceo:Rijksmonument } }
+} GROUP BY ?object ORDER BY ?object
