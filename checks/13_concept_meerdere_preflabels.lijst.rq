@@ -1,0 +1,6 @@
+# Lijst bij check 13: concepten met meer dan één prefLabel
+SELECT ?object (COUNT(DISTINCT ?l) AS ?aantal_labels) (GROUP_CONCAT(DISTINCT ?l; separator=" | ") AS ?labels) WHERE {
+  { SELECT DISTINCT ?object WHERE { GRAPH {G_INSTANTIES} {
+      ?x ceo:heeftFunctieNaam|ceo:heeftTypeNaam|ceo:heeftMateriaalNaam|ceo:heeftStijlEnCultuurNaam|ceo:heeftPeriode ?object } } }
+  GRAPH {G_INSTANTIES} { ?object skos:prefLabel ?l }
+} GROUP BY ?object HAVING (COUNT(DISTINCT ?l) > 1) ORDER BY DESC(?aantal_labels) ?object

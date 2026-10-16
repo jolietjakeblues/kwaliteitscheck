@@ -1,0 +1,10 @@
+# Lijst bij check 09: actieve rijksmonumenten gekoppeld aan een opgeheven gemeente
+SELECT ?object ?rijksmonumentnummer (SAMPLE(?n) AS ?naam) ?gemeente ?opgeheven_per WHERE {
+  { SELECT DISTINCT ?gm ?opgeheven_per ?gemeente WHERE { GRAPH {G_OWMS} {
+      ?gm a owms:Gemeente ; owms:endDate ?opgeheven_per . OPTIONAL { ?gm skos:prefLabel ?gemeente } } } }
+  GRAPH {G_INSTANTIES} {
+    ?object ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} ; ceo:heeftBasisregistratieRelatie/ceo:heeftGemeente ?gm ;
+            ceo:rijksmonumentnummer ?rijksmonumentnummer .
+    OPTIONAL { ?object ceo:heeftNaam/ceo:naam ?n }
+  }
+} GROUP BY ?object ?rijksmonumentnummer ?gemeente ?opgeheven_per ORDER BY ?rijksmonumentnummer

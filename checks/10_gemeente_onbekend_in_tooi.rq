@@ -1,9 +1,0 @@
-# titel: Gebruikte gemeente-URI onbekend in TOOI
-# dimensie: verwijzing
-# populatie: unieke gemeente-URI's in instanties-rce
-# toelichting: tooi:owmsId is een xsd:anyURI-literal, geen IRI; daarom wordt de literal nagebouwd met STRDT.
-SELECT (SUM(?f) AS ?fout) (COUNT(?gm) AS ?totaal) WHERE {
-  { SELECT DISTINCT ?gm WHERE { GRAPH {G_INSTANTIES} { ?x ceo:heeftGemeente ?gm } } }
-  BIND(STRDT(STR(?gm), xsd:anyURI) AS ?owms)
-  BIND(IF(EXISTS { GRAPH {G_TOOI} { ?t tooi:owmsId ?owms } }, 0, 1) AS ?f)
-}

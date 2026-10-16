@@ -34,7 +34,7 @@ De Windows-taak **CHO-KENNIS kwaliteitscheck** start elke dag om 07:30 `dagelijk
 
 - **Endpoint:** `https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/cho/sparql` (TriplyDB, niet de Virtuoso-service).
 - **Gecontroleerd:** alleen de hoofdgraph `graph/instanties-rce`, met ~92% van alle triples. Elke query beperkt zich expliciet met `GRAPH`, want zonder die beperking tellen objecten dubbel: het type `ceo:Rijksmonument` staat ook in `punten`, `image`, `image-1` en `groenaanleg`.
-- **Naslag:** TOOI-gemeenten, alleen om gemeenteverwijzingen te toetsen.
+- **Naslag:** OWMS, de waardelijst achter `ceo:heeftGemeente` en `ceo:heeftProvincie`, met types en `owms:endDate` voor opgeheven gemeenten. De dataset bevat OWMS twee keer (`koop/owms/graphs/default` en `graph/owms`). De checks toetsen tegen het KOOP-origineel, en check 23 bewaakt dat de kopieën gelijk blijven.
 - **Graphoverstijgend:** één check (20) zoekt rijksmonumenten die alleen in een bijgraph staan.
 - **Actieve rijksmonumenten** = `ceo:heeftJuridischeStatus` *rijksmonument*. De klasse `ceo:Rijksmonument` bevat ook objecten met de status *voorbeschermd* of *geen rijksmonument*.
 
@@ -52,14 +52,18 @@ SELECT (SUM(?f) AS ?fout) (COUNT(?m) AS ?totaal) WHERE {
 }
 ```
 
+**Lijst** (`checks/NN_naam.lijst.rq`, optioneel): een SELECT die de objecten achter de bevindingen teruggeeft, zonder LIMIT, want de runner pagineert zelf. Na elke volledige run komt er per check met bevindingen een `data/lijsten/NN_naam.csv`. Heeft de lijst een kolom `rijksmonumentnummer`, dan komt er automatisch een link naar het monumentenregister bij. Het dashboard toont de eerste 25 rijen en linkt naar de CSV. Check 15b heeft (nog) geen lijst: de query loopt op ~55 seconden tegen de timeout aan.
+
 Placeholders zoals `{G_INSTANTIES}` en `{JS_RIJKSMONUMENT}`, en de prefixes, staan centraal in `kwaliteit.py`.
 
-**Python** (`checks/NN_naam.py`): voor checks die op het endpoint te zwaar zijn. Definieer `META` en `run(sparql) -> (fout, totaal)`. Zie `09_rm_in_opgeheven_gemeente.py`.
+**Python** (`checks/NN_naam.py`): voor checks die op het endpoint te zwaar zijn en beter lokaal kunnen joinen. Definieer `META` en `run(sparql) -> (fout, totaal)`.
+
+Een selectie (`python kwaliteit.py 09 22`) toont alleen de uitkomst. Alleen volledige runs komen in de historie.
 
 ## Valkuilen van dit endpoint (opgedaan bij het bouwen)
 
 - Het endpoint breekt queries na ~60 seconden af. `EXISTS` per node over ~900.000 dateringen is te zwaar; tel in dat geval verschillen tussen twee `COUNT`s (zie 15 en 15b).
-- `tooi:owmsId` is een `xsd:anyURI`-literal, geen IRI. Een join met `ceo:heeftGemeente` vraagt `STRDT(STR(?gm), xsd:anyURI)`.
 - `FILTER` op een buitenvariabele binnen `EXISTS` matcht op dit endpoint niet betrouwbaar. Bind de waarde vooraf en gebruik die in het triple-patroon.
-- Een join tussen instanties-rce en TOOI over 63.000 monumenten loopt op een timeout. Twee kleine queries plus een lokale join kosten ~2 seconden.
+- Een join die vanaf de grote kant begint (63.000 monumenten → OWMS) loopt op een timeout. Begin met de kleine set (bv. opgeheven gemeenten) in een subquery en koppel dan (zie 09 en 22).
+- Een eventuele TOOI-koppeling: `tooi:owmsId` is daar een `xsd:anyURI`-literal, geen IRI, dus join met `STRDT(STR(?gm), xsd:anyURI)`.
 - Identieke queries komen uit de cache. Een tweede run op dezelfde dag is daardoor bijna gratis.

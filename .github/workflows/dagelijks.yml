@@ -59,6 +59,7 @@ jobs:
           mkdir -p site/data
           jupyter nbconvert --to html --execute --no-input dashboard.ipynb --output-dir site --output index
           cp data/historie.csv data/graphs_historie.csv site/data/
+          if [ -d data/lijsten ]; then cp -r data/lijsten site/data/; fi
 
       - uses: actions/upload-pages-artifact@v3
         with:

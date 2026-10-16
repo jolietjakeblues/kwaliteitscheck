@@ -1,0 +1,10 @@
+# Lijst bij check 17: BAG-relaties met huisnummer maar zonder postcode
+SELECT ?object (SAMPLE(?a) AS ?adres) (SAMPLE(?w) AS ?woonplaats) (SAMPLE(?nr) AS ?rijksmonumentnummer) WHERE {
+  GRAPH {G_INSTANTIES} {
+    ?object a ceo:BAGRelatie ; ceo:huisnummer ?h .
+    FILTER NOT EXISTS { ?object ceo:postcode ?p }
+    OPTIONAL { ?object ceo:volledigAdres ?a }
+    OPTIONAL { ?object ceo:woonplaatsnaam ?w }
+    OPTIONAL { ?cho ceo:heeftBasisregistratieRelatie/ceo:heeftBAGRelatie ?object ; ceo:rijksmonumentnummer ?nr }
+  }
+} GROUP BY ?object ORDER BY ?woonplaats ?adres

@@ -1,0 +1,9 @@
+# Lijst bij check 08: actieve rijksmonumenten zonder gemeente
+SELECT ?object ?rijksmonumentnummer (SAMPLE(?n) AS ?naam) (SAMPLE(?w) AS ?woonplaats) WHERE {
+  GRAPH {G_INSTANTIES} {
+    ?object ceo:heeftJuridischeStatus {JS_RIJKSMONUMENT} ; ceo:rijksmonumentnummer ?rijksmonumentnummer .
+    FILTER NOT EXISTS { ?object ceo:heeftBasisregistratieRelatie/ceo:heeftGemeente ?gm }
+    OPTIONAL { ?object ceo:heeftNaam/ceo:naam ?n }
+    OPTIONAL { ?object ceo:heeftBasisregistratieRelatie/ceo:heeftBAGRelatie/ceo:woonplaatsnaam ?w }
+  }
+} GROUP BY ?object ?rijksmonumentnummer ORDER BY ?rijksmonumentnummer

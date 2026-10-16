@@ -1,0 +1,10 @@
+# titel: Basisregistratierelatie verwijst naar opgeheven gemeente
+# dimensie: actualiteit
+# populatie: alle basisregistratierelaties met gemeente (alle objecttypen en statussen)
+# toelichting: Breder dan check 09: ook archeologie en objecten die geen rijksmonument (meer) zijn. Eerst de kleine set opgeheven gemeenten, dan koppelen.
+SELECT ?fout ?totaal WHERE {
+  { SELECT (COUNT(DISTINCT ?br) AS ?fout) WHERE {
+      { SELECT DISTINCT ?gm WHERE { GRAPH {G_OWMS} { ?gm a owms:Gemeente ; owms:endDate ?e } } }
+      GRAPH {G_INSTANTIES} { ?br ceo:heeftGemeente ?gm } } }
+  { SELECT (COUNT(DISTINCT ?br) AS ?totaal) WHERE { GRAPH {G_INSTANTIES} { ?br ceo:heeftGemeente ?gm } } }
+}

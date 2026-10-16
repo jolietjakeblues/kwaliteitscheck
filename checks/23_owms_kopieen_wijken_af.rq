@@ -1,0 +1,9 @@
+# titel: OWMS-kopieën in de dataset wijken af
+# dimensie: samenhang
+# populatie: triples in de KOOP-OWMS-graph
+# toelichting: De dataset bevat OWMS twee keer (KOOP-origineel en graph/owms). Telt triples die maar in één van beide staan.
+SELECT ((?a + ?b) AS ?fout) (?tot AS ?totaal) WHERE {
+  { SELECT (COUNT(*) AS ?tot) WHERE { GRAPH {G_OWMS} { ?s ?p ?o } } }
+  { SELECT (COUNT(*) AS ?a) WHERE { GRAPH {G_OWMS} { ?s ?p ?o } FILTER NOT EXISTS { GRAPH {G_OWMS_RCE} { ?s ?p ?o } } } }
+  { SELECT (COUNT(*) AS ?b) WHERE { GRAPH {G_OWMS_RCE} { ?s ?p ?o } FILTER NOT EXISTS { GRAPH {G_OWMS} { ?s ?p ?o } } } }
+}
